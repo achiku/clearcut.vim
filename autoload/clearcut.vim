@@ -1,7 +1,5 @@
 let s:default_script = fnamemodify(expand('<sfile>:p:h') . '/../scripts/clearcut_openai.py', ':p')
 
-echom 'hello'
-
 function! s:script_path() abort
   let l:override = get(g:, 'clearcut_rewrite_script', '')
   if !empty(l:override)
