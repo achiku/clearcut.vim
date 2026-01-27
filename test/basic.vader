@@ -1,0 +1,36 @@
+# Basic tests for clearcut.vim
+
+Execute (plugin loaded):
+  Assert exists('g:loaded_clearcut_agent'), 'Plugin should be loaded'
+
+Execute (Clearcut command exists):
+  Assert exists(':Clearcut'), 'Clearcut command should exist'
+
+Execute (clearcut#Rewrite function exists):
+  Assert exists('*clearcut#Rewrite'), 'clearcut#Rewrite() should exist'
+
+Given text (sample):
+  This is a test line.
+
+Execute (empty text error):
+  new
+  call setline(1, '  ')
+  redir => errors
+    silent! call clearcut#Rewrite(1, 1)
+  redir END
+  bwipe!
+  Assert errors =~ 'No text selected', 'Should error on empty text'
+
+Execute (missing API key error):
+  let saved = $OPEN_AI_KEY
+  let $OPEN_AI_KEY = ''
+
+  new
+  call setline(1, 'Test')
+  redir => errors
+    silent! call clearcut#Rewrite(1, 1)
+  redir END
+  bwipe!
+
+  let $OPEN_AI_KEY = saved
+  Assert errors =~ 'OPEN_AI_KEY', 'Should error when API key is missing'

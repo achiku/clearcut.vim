@@ -1,0 +1,89 @@
+name: Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        vim:
+          - vim
+          - neovim
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Vim
+        if: matrix.vim == 'vim'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y vim
+
+      - name: Install Neovim
+        if: matrix.vim == 'neovim'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y neovim
+
+      - name: Check Vim version
+        run: |
+          if [ "${{ matrix.vim }}" = "vim" ]; then
+            vim --version
+          else
+            nvim --version
+          fi
+
+      - name: Install vader.vim
+        run: |
+          git clone --depth 1 https://github.com/junegunn/vader.vim.git
+
+      - name: Run tests (without API key)
+        run: |
+          if [ "${{ matrix.vim }}" = "vim" ]; then
+            vim -Nu <(cat << EOF
+          filetype off
+          set rtp+=vader.vim
+          set rtp+=.
+          filetype plugin indent on
+          syntax enable
+          EOF
+          ) -c 'Vader! test/*.vader' > /dev/null
+          else
+            nvim -u <(cat << EOF
+          filetype off
+          set rtp+=vader.vim
+          set rtp+=.
+          filetype plugin indent on
+          syntax enable
+          EOF
+          ) -c 'Vader! test/*.vader' > /dev/null
+          fi
+
+      - name: Run tests (with mock API key)
+        env:
+          OPEN_AI_KEY: test-mock-key-for-ci
+        run: |
+          if [ "${{ matrix.vim }}" = "vim" ]; then
+            vim -Nu <(cat << EOF
+          filetype off
+          set rtp+=vader.vim
+          set rtp+=.
+          filetype plugin indent on
+          syntax enable
+          EOF
+          ) -c 'Vader! test/*.vader' > /dev/null
+          else
+            nvim -u <(cat << EOF
+          filetype off
+          set rtp+=vader.vim
+          set rtp+=.
+          filetype plugin indent on
+          syntax enable
+          EOF
+          ) -c 'Vader! test/*.vader' > /dev/null
+          fi
